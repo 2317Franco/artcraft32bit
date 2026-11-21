@@ -1,0 +1,35 @@
+# Salva questo file come .github/workflows/build-i686-linux.yml
+# in un tuo fork di https://github.com/storytold/craft-launcher,
+# poi vai su Actions -> "Build ArtCraft Launcher (Linux i686)" -> Run workflow.
+name: Build ArtCraft Launcher (Linux i686)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installa librerie 32-bit e toolchain
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib pkg-config \
+            libxkbcommon-dev:i386 libwayland-dev:i386 libx11-dev:i386 \
+            libxrandr-dev:i386 libxi-dev:i386 libxcursor-dev:i386 \
+            libxinerama-dev:i386 libgl1-mesa-dev:i386 libxfixes-dev:i386 \
+            libxcb1-dev:i386 libudev-dev:i386
+
+      - name: Aggiungi target i686
+        run: rustup target add i686-unknown-linux-gnu
+
+      - name: Compila ArtCraft Launcher per i686
+        run: cargo build --release --target i686-unknown-linux-gnu -p artcraft-launcher
+
+      - name: Carica il binario come artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artcraft-launcher-linux-i686
+          path: target/i686-unknown-linux-gnu/release/artcraft-launcher
